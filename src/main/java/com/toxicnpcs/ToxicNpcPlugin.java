@@ -5,11 +5,16 @@ import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.ActorDeath;
+import net.runelite.api.events.HitsplatApplied;
 import net.runelite.api.events.InteractingChanged;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 @Slf4j
 @PluginDescriptor(
@@ -17,7 +22,10 @@ import net.runelite.client.plugins.PluginDescriptor;
 )
 public class ToxicNpcPlugin extends Plugin
 {
-	private Actor lastInteractedWith = null;
+	private static final int HEAVY_DAMAGE_THRESHOLD = 40;
+	private static final int OVERHEAD_TEXT_TIMEOUT = 3000;
+
+	private NPC lastInteractedWith = null;
 
 	@Inject
 	private Client client;
@@ -40,8 +48,8 @@ public class ToxicNpcPlugin extends Plugin
 	@Subscribe
 	public void onInteractingChanged(InteractingChanged event) {
 		Actor source = event.getSource();
-		if (source != null && !(source instanceof Player)) {
-			lastInteractedWith = source;
+		if (source instanceof NPC && source.getName() != null) {
+			lastInteractedWith = (NPC)source;
 		}
 	}
 
@@ -49,18 +57,41 @@ public class ToxicNpcPlugin extends Plugin
 	public void onActorDeath(ActorDeath event) {
 		Actor actor = event.getActor();
         if (actor instanceof Player) {
-			lastInteractedWith.setOverheadText("Sit.");
-			client.addChatMessage(ChatMessageType.PUBLICCHAT, lastInteractedWith.getName(), "Sit.", null);
-			new java.util.Timer().schedule(
-					new java.util.TimerTask() {
-						@Override
-						public void run() {
-							lastInteractedWith.setOverheadText("");
-						}
-					},
-					3000
-			);
+			Map<RoastType, List<String>> roasts = BossInteractions.find(lastInteractedWith.getId()).getInCombatRoasts();
+			String roast = chooseRoast(roasts, CombatRoastType.DEATH);
+
+			deliverRoast(client, lastInteractedWith, roast);
 		}
+	}
+
+	@Subscribe
+	public void onHitsplatApplied(HitsplatApplied event) {
+		if (event.getHitsplat().getAmount() >= HEAVY_DAMAGE_THRESHOLD) {
+			Map<RoastType, List<String>> roasts = BossInteractions.find(lastInteractedWith.getId()).getInCombatRoasts();
+			String roast = chooseRoast(roasts, CombatRoastType.HEAVY_DAMAGE);
+
+			deliverRoast(client, lastInteractedWith, roast);
+		}
+	}
+
+	private static String chooseRoast(Map<RoastType, List<String>> roasts, RoastType roastType) {
+		Random random = new Random(System.currentTimeMillis());
+		List<String> roastList = roasts.get(roastType);
+		return roastList.get(random.nextInt(roastList.size()));
+	}
+
+	private static void deliverRoast(Client client, NPC bully, String roast) {
+		client.addChatMessage(ChatMessageType.PUBLICCHAT, bully.getName(), roast, null);
+		bully.setOverheadText(roast);
+		new java.util.Timer().schedule(
+				new java.util.TimerTask() {
+					@Override
+					public void run() {
+						bully.setOverheadText("");
+					}
+				},
+				OVERHEAD_TEXT_TIMEOUT
+		);
 	}
 
 	@Provides
