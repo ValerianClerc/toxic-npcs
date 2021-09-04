@@ -21,7 +21,8 @@ import java.util.Random;
 
 @Slf4j
 @PluginDescriptor(
-        name = "NPCs will now roast you"
+        name = "Toxic NPCs",
+        description = "NPCs will now roast you"
 )
 public class ToxicNpcPlugin extends Plugin {
     private static final int HEAVY_DAMAGE_THRESHOLD = 40;
@@ -29,10 +30,8 @@ public class ToxicNpcPlugin extends Plugin {
 
     // String key = Player name
     private final Map<String, NPC> lastInteractions = new HashMap<>();
-    private static final Map<RoastType, Long> roastHistory = new HashMap<>();
-    private static volatile long lastRoastTime = 0;
-
-    public static int globalCd = 30000;
+    private final Map<RoastType, Long> roastHistory = new HashMap<>();
+    private volatile long lastRoastTime = 0;
 
     @Inject
     private Client client;
@@ -91,16 +90,17 @@ public class ToxicNpcPlugin extends Plugin {
         }
     }
 
-    private static String chooseRoast(Map<RoastType, List<String>> roasts, RoastType roastType) {
+    private String chooseRoast(Map<RoastType, List<String>> roasts, RoastType roastType) {
         Random random = new Random(System.currentTimeMillis());
         List<String> roastList = roasts.get(roastType);
         return roastList.get(random.nextInt(roastList.size()));
     }
 
-    private static void deliverRoast(Client client, NPC bully, String roast, RoastType roastType) {
+    private void deliverRoast(Client client, NPC bully, String roast, RoastType roastType) {
         if (roastHistory.get(roastType) == null || !roastType.isOnCooldown(roastHistory.get(roastType))) {
 
-            if (lastRoastTime + globalCd > System.currentTimeMillis()) {
+            int globalCD = config.globalCooldown() * 1000;
+            if (lastRoastTime + globalCD > System.currentTimeMillis()) {
                 return;
             }
 

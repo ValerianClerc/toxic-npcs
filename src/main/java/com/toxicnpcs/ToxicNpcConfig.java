@@ -5,15 +5,14 @@ import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
 @ConfigGroup("toxicnpcs")
-public interface ToxicNpcConfig extends Config
-{
-	@ConfigItem(
-		keyName = "greeting",
-		name = "Welcome Greeting",
-		description = "The message to show to the user when they login"
-	)
-	default String greeting()
-	{
-		return "Hello";
-	}
+public interface ToxicNpcConfig extends Config {
+    @ConfigItem(
+            position = 1,
+            keyName = "globalCooldown",
+            name = "Global Cooldown (sec)",
+            description = "Sets a cooldown between roasts"
+    )
+    default int globalCooldown() {
+        return 30;
+    }
 }
