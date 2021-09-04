@@ -12,6 +12,7 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -25,7 +26,8 @@ public class ToxicNpcPlugin extends Plugin
 	private static final int HEAVY_DAMAGE_THRESHOLD = 40;
 	private static final int OVERHEAD_TEXT_TIMEOUT = 3000;
 
-	private NPC lastInteractedWith = null;
+	// String key = Player name
+	private final Map<String,NPC> lastInteractions = new HashMap<>();
 
 	@Inject
 	private Client client;
@@ -48,29 +50,41 @@ public class ToxicNpcPlugin extends Plugin
 	@Subscribe
 	public void onInteractingChanged(InteractingChanged event) {
 		Actor source = event.getSource();
-		if (source instanceof NPC && source.getName() != null) {
-			lastInteractedWith = (NPC)source;
+		Actor target = event.getTarget();
+		if (source instanceof NPC && target instanceof Player && source.getName() != null && target.getName() != null) {
+			lastInteractions.put(target.getName(), (NPC)source);
 		}
 	}
 
 	@Subscribe
 	public void onActorDeath(ActorDeath event) {
 		Actor actor = event.getActor();
-        if (actor instanceof Player) {
-			Map<RoastType, List<String>> roasts = BossInteractions.find(lastInteractedWith.getId()).getInCombatRoasts();
-			String roast = chooseRoast(roasts, CombatRoastType.DEATH);
+        if (actor instanceof Player && actor.getName() != null) {
+        	Player player = (Player)actor;
+        	NPC killer = lastInteractions.get(player.getName());
 
-			deliverRoast(client, lastInteractedWith, roast);
+			NPC lastInteractedWith = lastInteractions.get(player.getName());
+        	if (lastInteractedWith != null) {
+				Map<RoastType, List<String>> roasts = BossInteractions.find(lastInteractedWith.getId()).getInCombatRoasts();
+				String roast = chooseRoast(roasts, CombatRoastType.DEATH);
+
+				deliverRoast(client, lastInteractedWith, roast);
+			}
 		}
 	}
 
 	@Subscribe
 	public void onHitsplatApplied(HitsplatApplied event) {
-		if (event.getHitsplat().getAmount() >= HEAVY_DAMAGE_THRESHOLD) {
-			Map<RoastType, List<String>> roasts = BossInteractions.find(lastInteractedWith.getId()).getInCombatRoasts();
-			String roast = chooseRoast(roasts, CombatRoastType.HEAVY_DAMAGE);
+		if (event.getActor() instanceof Player && event.getActor().getName() != null && event.getHitsplat().getAmount() >= HEAVY_DAMAGE_THRESHOLD) {
+			Player player = (Player)event.getActor();
+			NPC lastInteractedWith = lastInteractions.get(player.getName());
 
-			deliverRoast(client, lastInteractedWith, roast);
+			if (lastInteractedWith != null) {
+				Map<RoastType, List<String>> roasts = BossInteractions.find(lastInteractedWith.getId()).getInCombatRoasts();
+				String roast = chooseRoast(roasts, CombatRoastType.HEAVY_DAMAGE);
+
+				deliverRoast(client, lastInteractedWith, roast);
+			}
 		}
 	}
 
