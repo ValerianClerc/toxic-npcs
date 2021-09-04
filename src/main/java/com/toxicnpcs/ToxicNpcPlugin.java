@@ -29,6 +29,10 @@ public class ToxicNpcPlugin extends Plugin {
 
     // String key = Player name
     private final Map<String, NPC> lastInteractions = new HashMap<>();
+    private static final Map<RoastType, Long> roastHistory = new HashMap<>();
+    private static volatile long lastRoastTime = 0;
+
+    public static int globalCd = 30000;
 
     @Inject
     private Client client;
@@ -67,7 +71,7 @@ public class ToxicNpcPlugin extends Plugin {
                 Map<RoastType, List<String>> roasts = BossInteractions.find(lastInteractedWith.getId()).getInCombatRoasts();
                 String roast = chooseRoast(roasts, CombatRoastType.DEATH);
 
-                deliverRoast(client, lastInteractedWith, roast);
+                deliverRoast(client, lastInteractedWith, roast, CombatRoastType.DEATH);
             }
         }
     }
@@ -82,7 +86,7 @@ public class ToxicNpcPlugin extends Plugin {
                 Map<RoastType, List<String>> roasts = BossInteractions.find(lastInteractedWith.getId()).getInCombatRoasts();
                 String roast = chooseRoast(roasts, CombatRoastType.HEAVY_DAMAGE);
 
-                deliverRoast(client, lastInteractedWith, roast);
+                deliverRoast(client, lastInteractedWith, roast, CombatRoastType.HEAVY_DAMAGE);
             }
         }
     }
@@ -93,18 +97,30 @@ public class ToxicNpcPlugin extends Plugin {
         return roastList.get(random.nextInt(roastList.size()));
     }
 
-    private static void deliverRoast(Client client, NPC bully, String roast) {
-        client.addChatMessage(ChatMessageType.PUBLICCHAT, bully.getName(), roast, null);
-        bully.setOverheadText(roast);
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        bully.setOverheadText("");
-                    }
-                },
-                OVERHEAD_TEXT_TIMEOUT
-        );
+    private static void deliverRoast(Client client, NPC bully, String roast, RoastType roastType) {
+        if (roastHistory.get(roastType) == null || !roastType.isOnCooldown(roastHistory.get(roastType))) {
+
+            if (lastRoastTime + globalCd > System.currentTimeMillis()) {
+                return;
+            }
+
+            client.addChatMessage(ChatMessageType.PUBLICCHAT, bully.getName(), roast, null);
+            bully.setOverheadText(roast);
+            lastRoastTime = System.currentTimeMillis();
+            roastHistory.put(roastType, lastRoastTime);
+
+            new java.util.Timer().schedule(
+                    new java.util.TimerTask() {
+                        @Override
+                        public void run() {
+                            if (lastRoastTime <= roastHistory.get(roastType)) {
+                                bully.setOverheadText("");
+                            }
+                        }
+                    },
+                    OVERHEAD_TEXT_TIMEOUT
+            );
+        }
     }
 
     @Provides
