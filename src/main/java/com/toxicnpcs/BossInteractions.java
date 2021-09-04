@@ -17,7 +17,7 @@ enum BossInteractions {
     private static final Map<Integer, BossInteractions> bosses;
     private final int id;
     private final Map<RoastType, List<String>> inCombatRoasts;
-    private static final Map<RoastType, List<String>> DEFAULT_IN_COMBAT_ROASTS = new HashMap<RoastType, List<String>>(){{
+    private static final Map<RoastType, List<String>> DEFAULT_IN_COMBAT_ROASTS = new HashMap<RoastType, List<String>>() {{
         put(CombatRoastType.DEATH, new ArrayList<>(Collections.singletonList("Sit.")));
         put(CombatRoastType.HEAVY_DAMAGE, new ArrayList<>(Collections.singletonList("hE nEeD SOmE mIlK")));
     }};
@@ -37,7 +37,7 @@ enum BossInteractions {
     BossInteractions(int id, Map<RoastType, List<String>> inCombatRoasts) {
         this.id = id;
         this.inCombatRoasts = inCombatRoasts;
-    };
+    }
 
     public int getId() {
         return this.id;
@@ -48,8 +48,7 @@ enum BossInteractions {
     }
 
     // find boss interactions by boss ID, otherwise return default
-    public static BossInteractions find(int id)
-    {
+    public static BossInteractions find(int id) {
         return bosses.getOrDefault(id, DEFAULT);
     }
 }
