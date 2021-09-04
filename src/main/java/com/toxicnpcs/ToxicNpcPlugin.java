@@ -77,15 +77,18 @@ public class ToxicNpcPlugin extends Plugin {
 
     @Subscribe
     public void onHitsplatApplied(HitsplatApplied event) {
-        if (event.getActor() instanceof Player && event.getActor().getName() != null && event.getHitsplat().getAmount() >= HEAVY_DAMAGE_THRESHOLD) {
+        if (event.getActor() instanceof Player && event.getActor().getName() != null) {
             Player player = (Player) event.getActor();
             NPC lastInteractedWith = lastInteractions.get(player.getName());
 
             if (lastInteractedWith != null) {
-                Map<RoastType, List<String>> roasts = BossInteractions.find(lastInteractedWith.getId()).getInCombatRoasts();
-                String roast = chooseRoast(roasts, CombatRoastType.HEAVY_DAMAGE);
+                BossInteractions bossInteractions = BossInteractions.find(lastInteractedWith.getId());
+                if (event.getHitsplat().getAmount() >= bossInteractions.getHeavyDamageThreshold()) {
+                    Map<RoastType, List<String>> roasts = bossInteractions.getInCombatRoasts();
+                    String roast = chooseRoast(roasts, CombatRoastType.HEAVY_DAMAGE);
 
-                deliverRoast(client, lastInteractedWith, roast, CombatRoastType.HEAVY_DAMAGE);
+                    deliverRoast(client, lastInteractedWith, roast, CombatRoastType.HEAVY_DAMAGE);
+                }
             }
         }
     }

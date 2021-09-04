@@ -9,14 +9,16 @@ import java.util.*;
 
 enum BossInteractions {
     // Bosses with unique interactions
-    CORPOREAL_BEAST(NpcID.CORPOREAL_BEAST, new HashMap<RoastType, List<String>>() {{
+    CORPOREAL_BEAST(NpcID.CORPOREAL_BEAST, 50, new HashMap<RoastType, List<String>>() {{
         put(CombatRoastType.DEATH, new ArrayList<>(Arrays.asList("????", "u good?", "l0000000000l")));
     }}),
-    DEFAULT(-1, new HashMap<>());
+    DEFAULT(-1, 80, new HashMap<>());
 
     private static final Map<Integer, BossInteractions> bosses;
     private final int id;
+    private final int heavyDamageThreshold;
     private final Map<RoastType, List<String>> inCombatRoasts;
+
     private static final Map<RoastType, List<String>> DEFAULT_IN_COMBAT_ROASTS = new HashMap<RoastType, List<String>>() {{
         put(CombatRoastType.DEATH, new ArrayList<>(Collections.singletonList("Sit.")));
         put(CombatRoastType.HEAVY_DAMAGE, new ArrayList<>(Collections.singletonList("hE nEeD SOmE mIlK")));
@@ -34,13 +36,18 @@ enum BossInteractions {
         bosses = builder.build();
     }
 
-    BossInteractions(int id, Map<RoastType, List<String>> inCombatRoasts) {
+    BossInteractions(int id, int heavyDamageThreshold, Map<RoastType, List<String>> inCombatRoasts) {
         this.id = id;
+        this.heavyDamageThreshold = heavyDamageThreshold;
         this.inCombatRoasts = inCombatRoasts;
     }
 
     public int getId() {
         return this.id;
+    }
+
+    public int getHeavyDamageThreshold() {
+        return this.heavyDamageThreshold;
     }
 
     public Map<RoastType, List<String>> getInCombatRoasts() {
