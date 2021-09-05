@@ -9,7 +9,7 @@ public class RoastData {
     }};
 
     public static final Map<RoastType, List<String>> ZULRAH_ROASTS = new HashMap<RoastType, List<String>>() {{
-        put(CombatRoastType.DEATH, new ArrayList<>(Collections.singletonList("jajajajajaja")));
-        put(CombatRoastType.HEAVY_DAMAGE, new ArrayList<>(Collections.singletonList("jajajajajaja")));
+        put(CombatRoastType.DEATH, new ArrayList<>(Collections.singletonList("Jajajajajajajajajaja")));
+        put(CombatRoastType.HEAVY_DAMAGE, new ArrayList<>(Collections.singletonList("Jajajajajajajajajaja")));
     }};
 }
