@@ -25,7 +25,6 @@ import java.util.Random;
         description = "NPCs will now roast you"
 )
 public class ToxicNpcPlugin extends Plugin {
-    private static final int HEAVY_DAMAGE_THRESHOLD = 40;
     private static final int OVERHEAD_TEXT_TIMEOUT = 3000;
 
     // String key = Player name
@@ -63,7 +62,6 @@ public class ToxicNpcPlugin extends Plugin {
         Actor actor = event.getActor();
         if (actor instanceof Player && actor.getName() != null) {
             Player player = (Player) actor;
-            NPC killer = lastInteractions.get(player.getName());
 
             NPC lastInteractedWith = lastInteractions.get(player.getName());
             if (lastInteractedWith != null) {

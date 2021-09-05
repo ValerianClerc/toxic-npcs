@@ -5,13 +5,11 @@ import net.runelite.api.NpcID;
 
 import java.util.*;
 
-// TODO: move roast strings to config file
-
 enum BossInteractions {
     // Bosses with unique interactions
-    CORPOREAL_BEAST(NpcID.CORPOREAL_BEAST, 50, new HashMap<RoastType, List<String>>() {{
-        put(CombatRoastType.DEATH, new ArrayList<>(Arrays.asList("????", "u good?", "l0000000000l")));
-    }}),
+    ZULRAH_1(NpcID.ZULRAH, 40, RoastData.ZULRAH_ROASTS),
+    ZULRAH_2(NpcID.ZULRAH_2043, 40, RoastData.ZULRAH_ROASTS),
+    ZULRAH_3(NpcID.ZULRAH_2044, 40, RoastData.ZULRAH_ROASTS),
     DEFAULT(-1, 80, new HashMap<>());
 
     private static final Map<Integer, BossInteractions> bosses;
@@ -19,17 +17,12 @@ enum BossInteractions {
     private final int heavyDamageThreshold;
     private final Map<RoastType, List<String>> inCombatRoasts;
 
-    private static final Map<RoastType, List<String>> DEFAULT_IN_COMBAT_ROASTS = new HashMap<RoastType, List<String>>() {{
-        put(CombatRoastType.DEATH, new ArrayList<>(Collections.singletonList("Sit.")));
-        put(CombatRoastType.HEAVY_DAMAGE, new ArrayList<>(Collections.singletonList("hE nEeD SOmE mIlK")));
-    }};
-
     static {
         ImmutableMap.Builder<Integer, BossInteractions> builder = new ImmutableMap.Builder<>();
 
         for (BossInteractions boss : values()) {
-            boss.getInCombatRoasts().computeIfAbsent(CombatRoastType.DEATH, k -> new ArrayList<>()).addAll(DEFAULT_IN_COMBAT_ROASTS.get(CombatRoastType.DEATH));
-            boss.getInCombatRoasts().computeIfAbsent(CombatRoastType.HEAVY_DAMAGE, k -> new ArrayList<>()).addAll(DEFAULT_IN_COMBAT_ROASTS.get(CombatRoastType.HEAVY_DAMAGE));
+            boss.getInCombatRoasts().computeIfAbsent(CombatRoastType.DEATH, k -> new ArrayList<>()).addAll(RoastData.DEFAULT_IN_COMBAT_ROASTS.get(CombatRoastType.DEATH));
+            boss.getInCombatRoasts().computeIfAbsent(CombatRoastType.HEAVY_DAMAGE, k -> new ArrayList<>()).addAll(RoastData.DEFAULT_IN_COMBAT_ROASTS.get(CombatRoastType.HEAVY_DAMAGE));
             builder.put(boss.getId(), boss);
         }
 
